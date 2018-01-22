@@ -1,6 +1,15 @@
 ## validation-operator
+[![Build Status](https://travis-ci.org/rafaelkallis/validation-operator.svg?branch=master)](https://travis-ci.org/rafaelkallis/validation-operator)
+[![npm version](https://badge.fury.io/js/validation-operator.svg)](https://badge.fury.io/js/validation-operator)
+[![GitHub version](https://badge.fury.io/gh/rafaelkallis%2Fvalidation-operator.svg)](https://badge.fury.io/gh/rafaelkallis%2Fvalidation-operator)
 
 Higher-Order runtime validation for parameter and return values.
+
+- Parameter validation enhancer
+- Result validation enhancer
+- Joi and ajv json schema supported
+- User with `compose` for better readability
+- Typescript definitions included
 
 ### Usage
 
@@ -28,11 +37,11 @@ const userRepository = {
             required: ["username", "password"],
         })(({ username, password }) => {
                 /* username and password validated */
-                db.create({ username, password });
+                return db.create({ username, password });
             }),
 };
 
-userRepository.create({ username: "foo", password: "bar" });
+const user = userRepository.create({ username: "foo", password: "bar" });
 ```
 
 #### Example 2 (parameter validation with Joi)
@@ -47,11 +56,11 @@ const userRepository = {
             password: Joi.string().required(),
         }))(({ username, password }) => {
                 /* username and password validated */
-                db.create({ username, password });
+                return db.create({ username, password });
             }),
 };
 
-userRepository.create({ username: "foo", password: "bar" });
+const user = userRepository.create({ username: "foo", password: "bar" });
 ```
 
 #### Example 3 (multiple parameter validation with Joi or json schema)
@@ -66,11 +75,11 @@ const userRepository = {
             Joi.string().required(),
         )((username, password) => {
             /* username and password validated */
-            db.create({ username, password });
+            return db.create({ username, password });
         }),
 };
 
-userRepository("foo", "bar");
+const user = userRepository.create("foo", "bar");
 ```
 
 #### Example 4 (result validation with Joi or json schema)
