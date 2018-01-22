@@ -8,7 +8,7 @@ Higher-Order runtime validation for parameter and return values.
 - Parameter validation enhancer
 - Result validation enhancer
 - Joi and ajv json schema supported
-- User with `compose` for better readability
+- Use with `compose` for better readability
 - Typescript definitions included
 
 ### Usage
