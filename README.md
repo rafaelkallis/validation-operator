@@ -8,7 +8,7 @@ Higher-Order runtime validation for parameter and return values.
 - Parameter validation enhancer
 - Result validation enhancer
 - Joi schema supported
-- Use with `compose` for better readability
+- Use with `lodash.flow` for better readability
 - Typescript definitions included
 
 ### Usage
@@ -25,7 +25,7 @@ yarn add validation-operator
 
 ```js
 const { validateParams } = require("validation-operator");
-const Joi = reruire("joi");
+const Joi = require("joi");
 const db = require("./db");
 
 const userRepository = {
