@@ -1,12 +1,12 @@
 {
     "name": "validation-operator",
-    "version": "1.0.1",
+    "version": "2.0.0",
     "description": "🛂 Higher-Order runtime validation for parameter and result values.",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "scripts": {
         "test": "jest",
-        "test:typings": "tsc --noEmit --strict --noImplicitReturns --noUnusedLocals --noUnusedParameters lib/index.d.ts lib/joi.d.ts lib/json.d.ts"
+        "typings": "tsc --noEmit --strict --noImplicitReturns --noUnusedLocals --noUnusedParameters lib/index.d.ts"
     },
     "bugs": {
         "url": "https://github.com/rafaelkallis/validation-operator/issues"
@@ -17,13 +17,11 @@
     "license": "MIT",
     "devDependencies": {
         "@types/joi": "^13.0.5",
-        "ajv-keywords": "^3.0.0",
         "jest": "^22.1.2",
         "joi": "^13.1.1",
         "typescript": "^2.6.2"
     },
     "dependencies": {
-        "ajv": "^6.0.1",
         "invariant": "^2.2.2"
     },
     "jest": {
