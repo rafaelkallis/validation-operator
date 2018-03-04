@@ -1,11 +1,10 @@
 {
     "name": "validation-operator",
-    "version": "2.2.2",
+    "version": "2.2.3",
     "description": "🛂 Higher-Order runtime validation for parameter and result values.",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "scripts": {
-        "prepublish": "tsc",
         "build": "tsc",
         "test": "jest",
         "type-check": "tsc --noEmit"
