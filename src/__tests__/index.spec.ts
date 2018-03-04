@@ -1,10 +1,10 @@
 /**
+ * @file index.spec.js
  * @author Rafael Kallis <rk@rafaelkallis.com>
  */
 
-const { validateParams, validateResult } = require("./index");
-
-const Joi = require("joi");
+import { validateParams, validateResult } from "../index";
+import * as Joi from "joi";
 
 describe("joi schema", () => {
 
