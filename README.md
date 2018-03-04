@@ -21,7 +21,7 @@ npm install --save validation-operator
 yarn add validation-operator
 ```
 
-#### Example 1 (parameter validation with Joi)
+#### Example 1 (parameter validation)
 
 ```js
 const { validateParams } = require("validation-operator");
@@ -61,7 +61,7 @@ const userRepository = {
 const user = userRepository.create("foo", "bar");
 ```
 
-#### Example 3 (result validation with Joi or json schema)
+#### Example 3 (result validation)
 
 ```js
 const { validateResult } = require("validation-operator");
