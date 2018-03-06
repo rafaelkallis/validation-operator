@@ -2,6 +2,7 @@
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
+        "pretty": true,
         "lib": ["es2017"],
         "declaration": true,                   /* Generates corresponding '.d.ts' file. */
         "outDir": "./lib",                        /* Redirect output structure to the directory. */

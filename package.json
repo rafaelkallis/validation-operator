@@ -1,6 +1,6 @@
 {
     "name": "validation-operator",
-    "version": "2.2.3",
+    "version": "3.0.0",
     "description": "🛂 Higher-Order runtime validation for parameter and result values.",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
