@@ -3,9 +3,10 @@
  * @author Rafael Kallis <rk@rafaelkallis.com>
  */
 
-import * as Joi from 'joi';
-import * as invariant from 'invariant';
-import isPromise = require('is-promise');
+import invariant from 'invariant';
+import isPromise from 'is-promise';
+import Joi from 'joi';
+import isFunction from 'lodash.isfunction';
 
 type ValidationFunction<S> = <T>(schema: S, arg: T) => T;
 
@@ -35,87 +36,154 @@ export type Function6<T1, T2, T3, T4, T5, T6, R> = (
   arg6: T6,
 ) => R;
 
-export type Fn = (...args: any[]) => any;
-export type HigherOrderFunction<F extends Fn> = (f: F) => F;
-export type HOF<F extends Fn> = HigherOrderFunction<F>;
+export type UnaryOp<T> = (t: T) => T;
 
-function parameterValidationFactory<S, F extends Fn>(
-  validate: ValidationFunction<S>,
-) {
-  return function(...schemata: S[]): HOF<F> {
-    return function(f: F) {
-      return function(...args: any[]): any {
+/**
+ * Create a parameter validation function.
+ * @param validate - The function which validates a value given a schema.
+ */
+function parameterValidationFactory<S>(validate: ValidationFunction<S>) {
+  return function(...schemata: S[]) {
+    return function<A, R>(f: (...args: A[]) => R) {
+      invariant(isFunction(f), 'argument f is not a function');
+      return function(...args: A[]): PromiseLike<R> | R {
         invariant(
           schemata.length >= args.length,
           'number of arguments is greater than number of schemata.',
         );
-        const newArgs: any[] = [];
+        const newArgs = [];
         for (let i = 0; i < schemata.length; i++) {
-          newArgs[i] = validate<any>(schemata[i], args[i]);
+          newArgs[i] = validate(schemata[i], args[i]);
         }
         return f(...newArgs);
-      } as any;
+      };
     };
   };
 }
 
-const resultValidationFactory = <S, F extends Fn>(
-  validate: ValidationFunction<S>,
-) =>
-  function(schema: S): HOF<F> {
-    invariant(
-      schema !== undefined && schema !== null,
-      'schema is null or undefined',
-    );
-    return (func: Fn) =>
-      function(...args: any[]): any {
-        const result: Promise<any> | any = func(...args);
+/**
+ * Create a result validation function.
+ * @param validate - The function which validates a value given a schema.
+ */
+function resultValidationFactory<S>(validate: ValidationFunction<S>) {
+  return function(s: S) {
+    invariant(s, 'argument s is not a schema');
+    return function<A, R>(f: (...args: A[]) => PromiseLike<R> | R) {
+      invariant(isFunction(f), 'argument f is not a function');
+      return function(...args: A[]): PromiseLike<R> | R {
+        const result: PromiseLike<R> | R = f(...args);
         if (isPromise(result)) {
-          return result.then(v => validate(schema, v));
+          return result.then(v => validate(s, v));
         }
-        return validate(schema, result);
-      } as any;
+        return validate(s, result);
+      };
+    };
   };
+}
 
-const joiValidation: ValidationFunction<Joi.Schema> = function<T>(
-  schema: Joi.Schema,
-  arg: T,
-): T {
+/**
+ * Joi schema validator.
+ * @param schema - Joi schema.
+ * @param arg - Argument to validate.
+ * @return The validated argument.
+ */
+function joiValidation<T>(schema: Joi.Schema, arg: T): T {
   const {value, error} = schema.validate<T>(arg);
+  // tslint:disable-next-line: strict-type-predicates
   if (error !== null) {
     throw error;
   }
+
   return value;
-};
+}
 
-const joiParameterValidation: (
-  ...schemata: Joi.Schema[]
-) => HOF<Fn> = parameterValidationFactory<Joi.Schema, Fn>(joiValidation);
+// Parameter Validation
 
-export function validateParams<R>(): HOF<Function0<R>>;
-export function validateParams<A1, R>(s1: Joi.Schema): HOF<Function1<A1, R>>;
+const joiParameterValidation = parameterValidationFactory<Joi.Schema>(
+  joiValidation,
+);
+
+/**
+ * Returns parameter validating higher order function.
+ * @returns Parameter validating higher order function.
+ */
+export function validateParams<R>(): UnaryOp<Function0<R>>;
+
+/**
+ * Returns parameter validating higher order function.
+ * @param s1 - Joi schema for 1st parameter.
+ * @returns Parameter validating higher order function.
+ */
+export function validateParams<A1, R>(
+  s1: Joi.Schema,
+): UnaryOp<Function1<A1, R>>;
+
+/**
+ * Returns parameter validating higher order function.
+ * @param s1 - Joi schema for 1st parameter.
+ * @param s2 - Joi schema for 2nd parameter.
+ * @returns Parameter validating higher order function.
+ */
 export function validateParams<A1, A2, R>(
   s1: Joi.Schema,
   s2: Joi.Schema,
-): HOF<Function2<A1, A2, R>>;
+): UnaryOp<Function2<A1, A2, R>>;
+
+/**
+ * Returns parameter validating higher order function.
+ * @param s1 - Joi schema for 1st parameter.
+ * @param s2 - Joi schema for 2nd parameter.
+ * @param s3 - Joi schema for 3rd parameter.
+ * @returns Parameter validating higher order function.
+ */
 export function validateParams<A1, A2, A3, R>(
   s1: Joi.Schema,
   s2: Joi.Schema,
   s3: Joi.Schema,
-): HOF<Function3<A1, A2, A3, R>>;
+): UnaryOp<Function3<A1, A2, A3, R>>;
+
+/**
+ * Returns parameter validating higher order function.
+ * @param s1 - Joi schema for 1st parameter.
+ * @param s2 - Joi schema for 2nd parameter.
+ * @param s3 - Joi schema for 3rd parameter.
+ * @param s4 - Joi schema for 4th parameter.
+ * @returns Parameter validating higher order function.
+ */
 export function validateParams<A1, A2, A3, A4, R>(
   s1: Joi.Schema,
   s2: Joi.Schema,
   s3: Joi.Schema,
   s4: Joi.Schema,
-): HOF<Function4<A1, A2, A3, A4, R>>;
+): UnaryOp<Function4<A1, A2, A3, A4, R>>;
+
+/**
+ * Returns parameter validating higher order function.
+ * @param s1 - Joi schema for 1st parameter.
+ * @param s2 - Joi schema for 2nd parameter.
+ * @param s3 - Joi schema for 3rd parameter.
+ * @param s4 - Joi schema for 4th parameter.
+ * @param s5 - Joi schema for 5th parameter.
+ * @returns Parameter validating higher order function.
+ */
 export function validateParams<A1, A2, A3, A4, A5, R>(
   s1: Joi.Schema,
   s2: Joi.Schema,
   s3: Joi.Schema,
   s4: Joi.Schema,
   s5: Joi.Schema,
-): HOF<Function5<A1, A2, A3, A4, A5, R>>;
+): UnaryOp<Function5<A1, A2, A3, A4, A5, R>>;
+
+/**
+ * Returns parameter validating higher order function.
+ * @param s1 - Joi schema for 1st parameter.
+ * @param s2 - Joi schema for 2nd parameter.
+ * @param s3 - Joi schema for 3rd parameter.
+ * @param s4 - Joi schema for 4th parameter.
+ * @param s5 - Joi schema for 5th parameter.
+ * @param s6 - Joi schema for 6th parameter.
+ * @returns Parameter validating higher order function.
+ */
 export function validateParams<A1, A2, A3, A4, A5, A6, R>(
   s1: Joi.Schema,
   s2: Joi.Schema,
@@ -123,35 +191,91 @@ export function validateParams<A1, A2, A3, A4, A5, A6, R>(
   s4: Joi.Schema,
   s5: Joi.Schema,
   s6: Joi.Schema,
-): HOF<Function6<A1, A2, A3, A4, A5, A6, R>>;
-export function validateParams(...schemata: Joi.Schema[]): HOF<Fn> {
+): UnaryOp<Function6<A1, A2, A3, A4, A5, A6, R>>;
+
+/**
+ * Returns parameter validating higher order function.
+ * @param schemata - Joi schemata for parameters.
+ * @returns Parameter validating higher order function.
+ */
+export function validateParams(...schemata: Joi.Schema[]) {
+  for (const schema of schemata) {
+    invariant(schema.isJoi, 'provided schema is not a Joi schema');
+  }
   return joiParameterValidation(...schemata);
 }
 
-const joiResultValidation: Function1<
-  Joi.Schema,
-  HOF<Fn>
-> = resultValidationFactory<Joi.Schema, Fn>(joiValidation);
+// Result Validation
 
-export function validateResult<R>(schema: Joi.Schema): HOF<Function0<R>>;
+const joiResultValidation = resultValidationFactory<Joi.Schema>(joiValidation);
+
+/**
+ * Returns result validating higher order function.
+ * @param schema - Joi schema for result.
+ * @returns Result validating higher order function.
+ */
+export function validateResult<R>(schema: Joi.Schema): UnaryOp<Function0<R>>;
+
+/**
+ * Returns result validating higher order function.
+ * @param schema - Joi schema for result.
+ * @returns Result validating higher order function.
+ */
 export function validateResult<A1, R>(
   schema: Joi.Schema,
-): HOF<Function1<A1, R>>;
+): UnaryOp<Function1<A1, R>>;
+
+/**
+ * Returns result validating higher order function.
+ * @param schema - Joi schema for result.
+ * @returns Result validating higher order function.
+ */
 export function validateResult<A1, A2, R>(
   schema: Joi.Schema,
-): HOF<Function2<A1, A2, R>>;
+): UnaryOp<Function2<A1, A2, R>>;
+
+/**
+ * Returns result validating higher order function.
+ * @param schema - Joi schema for result.
+ * @returns Result validating higher order function.
+ */
 export function validateResult<A1, A2, A3, R>(
   schema: Joi.Schema,
-): HOF<Function3<A1, A2, A3, R>>;
+): UnaryOp<Function3<A1, A2, A3, R>>;
+
+/**
+ * Returns result validating higher order function.
+ * @param schema - Joi schema for result.
+ * @returns Result validating higher order function.
+ */
 export function validateResult<A1, A2, A3, A4, R>(
   schema: Joi.Schema,
-): HOF<Function4<A1, A2, A3, A4, R>>;
+): UnaryOp<Function4<A1, A2, A3, A4, R>>;
+
+/**
+ * Returns result validating higher order function.
+ * @param schema - Joi schema for result.
+ * @returns Result validating higher order function.
+ */
 export function validateResult<A1, A2, A3, A4, A5, R>(
   schema: Joi.Schema,
-): HOF<Function5<A1, A2, A3, A4, A5, R>>;
+): UnaryOp<Function5<A1, A2, A3, A4, A5, R>>;
+
+/**
+ * Returns result validating higher order function.
+ * @param schema - Joi schema for result.
+ * @returns Result validating higher order function.
+ */
 export function validateResult<A1, A2, A3, A4, A5, A6, R>(
   schema: Joi.Schema,
-): HOF<Function6<A1, A2, A3, A4, A5, A6, R>>;
-export function validateResult(schema: Joi.Schema): HOF<Fn> {
+): UnaryOp<Function6<A1, A2, A3, A4, A5, A6, R>>;
+
+/**
+ * Returns result validating higher order function.
+ * @param schema - Joi schema for result.
+ * @returns Result validating higher order function.
+ */
+export function validateResult(schema: Joi.Schema) {
+  invariant(schema.isJoi, 'provided schema is not a Joi schema');
   return joiResultValidation(schema);
 }
