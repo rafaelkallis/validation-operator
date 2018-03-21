@@ -1,6 +1,6 @@
 {
     "name": "validation-operator",
-    "version": "4.0.0",
+    "version": "5.0.0",
     "description": "🛂 Higher-Order runtime validation for parameter and result values.",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -20,18 +20,18 @@
     "devDependencies": {
         "@types/invariant": "^2.2.29",
         "@types/is-promise": "^2.1.0",
-        "@types/jest": "^22.1.0",
-        "@types/joi": "^13.0.5",
+        "@types/jest": "^22.2.0",
+        "@types/joi": "^13.0.6",
         "@types/lodash.isfunction": "^3.0.3",
         "jest": "^22.4.2",
         "joi": "^13.1.2",
-        "ts-jest": "^22.4.1",
+        "ts-jest": "^22.4.2",
         "tslint": "^5.9.1",
-        "tslint-config-prettier": "^1.9.0",
-        "typescript": "^2.6.2"
+        "tslint-config-prettier": "^1.10.0",
+        "typescript": "^2.7.2"
     },
     "dependencies": {
-        "invariant": "^2.2.2",
+        "invariant": "^2.2.4",
         "is-promise": "^2.1.0",
         "lodash.isfunction": "^3.0.9"
     },

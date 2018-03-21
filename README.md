@@ -98,15 +98,18 @@ interface UserRepository {
     findById(_id: string): User
 }
 
-const userRepository: UserRepository = {
-    findById: validateResult(Joi.object({
+
+class UserRepositoryImpl implements UserRepository {
+    findById = validateResult(Joi.object({
             id: Joi.string().uuid().required(),
             username: Joi.string().required(),
             password: Joi.string().required(),
-        })(function (_id) {
+        })(function (this: UserRepositoryImpl, _id: string): User {
             return db.find({ _id });
-        }),
-};
+        })
+}
+
+const userRepository = new UserRepositoryImpl();
 
 const user: User = userRepository.findById("xxxxxx");
 /* user validated */
